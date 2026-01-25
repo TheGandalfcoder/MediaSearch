@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Analysis - Compare Media</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo-link">
+                <img src="img/logo.png" alt="Media Analysis" class="logo">
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="content-wrapper">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-content">
+                    <h3 class="sidebar-title">TYPE OF VISUALIZATION</h3>
+                    <ul class="visualization-list">
+                        <li>
+                            <button class="viz-option" data-viz="pie">Pie Chart</button>
+                        </li>
+                        <li>
+                            <button class="viz-option" data-viz="bar">Bar Chart</button>
+                        </li>
+                        <li>
+                            <button class="viz-option" data-viz="line">Line Chart</button>
+                        </li>
+                        <li>
+                            <button class="viz-option" data-viz="scatter">Scatter Plot</button>
+                        </li>
+                        <li>
+                            <button class="viz-option" data-viz="area">Area Chart</button>
+                        </li>
+                    </ul>
+                </div>
+            </aside>
+
+            <!-- Main Content Area -->
+            <div class="container">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <h1>Compare Media</h1>
+                    <hr class="header-divider">
+                </div>
+
+            <!-- Options Bar -->
+            <div class="options-bar">
+                <div class="options-left">
+                    <div class="search-container">
+                        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                        <input type="text" oninput=searchMedia() class="search-input" placeholder="Search symbols or companies..." id="searchMediaBox">
+                    </div>
+             
+                </div>
+              
+            </div>
+
+            <!-- Comparison Area -->
+            <div class="comparison-area" id="dropZone">
+                <div class="empty-state">
+                    <h2>Add a symbol to get started</h2>
+                    <p>Enter media symbols to compare performance, metrics, and trends</p>
+                   
+                </div>
+            </div>
+
+            <!-- Popular Comparisons Section -->
+            <div class="popular-section">
+    <h3 class="popular-title">Popular Media Comparisons</h3>
+
+    <div class="popular-comparisons">
+       <button
+  type="button"
+  class="comparison-link"
+  data-stream="AMAZON"
+  draggable="true"
+  onclick="passValue('AMZN')"
+  aria-label="Compare Amazon Prime Video">
+
+  <img src="logos/amazon.avif"
+       alt="Amazon Prime Video logo"
+       class="comparison-logo"
+       loading="lazy">
+</button>
+
+
+        <button
+    id="DISNY-btn"
+  type="button"
+  class="comparison-link"
+  data-stream="DISNEY"
+  draggable="true"
+  onclick="passValue('DISNY')"
+  aria-label="Compare Disney Plus">
+
+  <img src="logos/disney.png"
+       alt="Disney Plus logo"
+       class="comparison-logo"
+       loading="lazy">
+</button>
+
+
+       <button
+       id="HBO-btn"
+  type="button"
+  class="comparison-link"
+  data-stream="HBO"
+  draggable="true"
+  onclick="passValue('HBO')"
+  aria-label="Compare HBO">
+
+  <img src="logos/hbo.png"
+       alt="HBO logo"
+       class="comparison-logo"
+       loading="lazy">
+</button>
+
+<button
+id="HULU-btn"
+  type="button"
+  class="comparison-link"
+  data-stream="HULU"
+  draggable="true"
+  onclick="passValue('HULU')"
+  aria-label="Compare Hulu">
+
+  <img src="logos/hulu.png"
+       alt="Hulu logo"
+       class="comparison-logo"
+       loading="lazy">
+</button>
+
+
+<button
+id="NTFLX-btn"
+  type="button"
+  class="comparison-link"
+  data-stream="NETFLX"
+  draggable="true"
+  onclick="passValue('NTFLX')"
+  aria-label="Compare Netflix">
+
+  <img src="logos/netflix.png"
+       alt="Netflix logo"
+       class="comparison-logo"
+       loading="lazy">
+</button>
+
+<button
+id="SPTFY-btn"
+  type="button"
+  class="comparison-link"
+  data-stream="SPOTIFY"
+  draggable="true"
+  onclick="passValue('SPOTIFY')"
+  aria-label="Compare Spotify">
+
+  <img src="logos/spotify.tiff"
+       alt="Spotify logo"
+       class="comparison-logo"
+       loading="lazy">
+</button>
+
+
+    </div>
+</div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-section">
+                <h4>Sections</h4>
+                <ul>
+                    <li><a href="#">Media Types</a></li>
+                    <li><a href="#">Comparisons</a></li>
+                    <li><a href="#">Analysis Tools</a></li>
+                    <li><a href="#">Market Data</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Services</h4>
+                <ul>
+                    <li><a href="#">Media Analysis Pro</a></li>
+                    <li><a href="#">Newsletter</a></li>
+                    <li><a href="#">Support</a></li>
+                    <li><a href="#">API Access</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Contact Us</a></li>
+                    <li><a href="#">Terms of Use</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Media Analysis. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+   
+</body>
+</html>
