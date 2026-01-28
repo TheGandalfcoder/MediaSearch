@@ -12,7 +12,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
  const searchMediaBox = document.getElementById("searchMediaBox")
 
+ const values = [];
+
   const resultsBox = document.getElementById("searchResults");
+        resultsBox.innerHTML = "";
   
   // Safety check
   if (!dropZone) {
@@ -24,40 +27,57 @@ document.addEventListener("DOMContentLoaded", () => {
     console.error('No SearchMediaBoxPresent')
   }
 
-  function searchMedia(){
-    console.log("searching..")
-    let input = searchMediaBox.value.toLowerCase();
-    console.log("searching for "+input)
+function searchMedia() {
+  const input = searchMediaBox.value.trim().toLowerCase();
+  const resultsBox = document.getElementById("searchResults");
 
-     draggableButtons.forEach((button) => {
-    
+  // Clear old results every search
+  resultsBox.innerHTML = "";
+
+  // If input is empty, show nothing
+  if (input === "") {
+    return;
+  }
+
+  draggableButtons.forEach((button) => {
     const value = button.dataset.stream.toLowerCase();
-     // console.log("here are all the button values:"+value)
-       if (value.includes(input)||(value.startsWith(input))){
 
-        console.log('possible outcomes:'+value)
-        outputValue(value);
-       }
-      else {
-        console.log('no media available for the search clearing the searchbar '+ input)
+    if (value.includes(input)) {
+      outputValue(value);
+    }
+  });
+}
 
-      }
-      
-    });
+function outputValue(value) {
+  const resultsBox = document.getElementById("searchResults");
+
+  const item = document.createElement("button");
+  item.className = "search-result-item";
+  item.textContent = value.toUpperCase();//sets the value
+  
+  resultsBox.appendChild(item);
+
+  item.addEventListener("click", () => {
+  const stream = value.toUpperCase();
+
+  if (selectedStreams.has(stream)) {
+    selectedStreams.delete(stream);
+    item.classList.remove("active");
+     //btn.classList.toggle("active");
+
+  } else {
+    selectedStreams.add(stream);
+    item.classList.add("active");
   }
-  function outputValue(value){
-    
 
-   const resultsBox = document.getElementById("searchResults");
+  updateButtonStates();
 
-  const item = document.createElement("div");
-  item.textContent = value.toUpperCase();
+  console.clear();
+  console.log("Selected streams:", [...selectedStreams]);
+});
+}
 
-  resultsBox.appendChild(item);   
-    
-      
-  }
-    
+  
 
 
 
@@ -138,3 +158,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.searchMedia = searchMedia;
 });
+

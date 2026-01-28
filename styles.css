@@ -203,13 +203,15 @@ body {
   margin-top: 8px;
   width: 100%;
   min-height: 80px;               /* makes it visible even when empty */
-  border: 1px solid #d0d0d0;
   border-radius: 10px;
-  background: #fff;               /* force visible background */
+  background: none;               /* force visible background */
   padding: 10px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
   font-size: 0.9rem;
   color: #333;
+}
+
+.search-result-item{
+    width:100px;
 }
 
 /* Placeholder styling */
