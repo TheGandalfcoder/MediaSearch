@@ -1,5 +1,3 @@
-
-
 document.addEventListener("DOMContentLoaded", () => {
 
 
@@ -13,6 +11,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const selectedStreams = new Set();
 
  const searchMediaBox = document.getElementById("searchMediaBox")
+
+  const resultsBox = document.getElementById("searchResults");
   
   // Safety check
   if (!dropZone) {
@@ -36,18 +36,31 @@ document.addEventListener("DOMContentLoaded", () => {
        if (value.includes(input)||(value.startsWith(input))){
 
         console.log('possible outcomes:'+value)
-
+        outputValue(value);
        }
+      else {
+        console.log('no media available for the search clearing the searchbar '+ input)
+
+      }
       
     });
+  }
+  function outputValue(value){
+    
+
+   const resultsBox = document.getElementById("searchResults");
+
+  const item = document.createElement("div");
+  item.textContent = value.toUpperCase();
+
+  resultsBox.appendChild(item);   
+    
+      
   }
     
 
 
 
-  // --------------------------
-  // CLICK + DRAGSTART per button
-  // --------------------------
   draggableButtons.forEach((button) => {
     // CLICK should toggle selection (multi-select)
     button.addEventListener("click", () => {
@@ -62,16 +75,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // --------------------------
-  // Allow dropping by preventing default
-  // --------------------------
   dropZone.addEventListener("dragover", (event) => {
     event.preventDefault();
   });
 
-  // --------------------------
-  // DROP: toggle selection + alert
-  // --------------------------
   dropZone.addEventListener("drop", (event) => {
     event.preventDefault();
 
@@ -90,9 +97,6 @@ document.addEventListener("DOMContentLoaded", () => {
     logSelectedIntValues();
   });
 
-  // --------------------------
-  // Toggle a stream in/out of the Set
-  // --------------------------
   function toggleButtonActive(stream) {
     if (selectedStreams.has(stream)) {
       selectedStreams.delete(stream);
@@ -103,18 +107,14 @@ document.addEventListener("DOMContentLoaded", () => {
     updateButtonStates();
   }
 
-  // --------------------------
-  // Update UI to match Set state
-  // --------------------------
   function updateButtonStates() {
     document.querySelectorAll(".comparison-link").forEach((btn) => {
       btn.classList.toggle("active", selectedStreams.has(btn.dataset.stream));
+
+      
     });
   }
 
-  // --------------------------
-  // Convert a stream code to an int
-  // --------------------------
   function streamToInt(stream) {
     switch (stream) {
       case "HBO": return 1;
@@ -127,9 +127,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // --------------------------
-  // Log all selected stream int values
-  // --------------------------
   function logSelectedIntValues() {
     console.clear();
     console.log("Selected streams:", [...selectedStreams]);
