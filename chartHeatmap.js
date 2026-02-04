@@ -1,6 +1,4 @@
-// ===========================
-// SIMPLE HEAT MAP - Clean Growth Visualization
-// ===========================
+
 let heatmapCanvas = null;
 let heatmapCtx = null;
 

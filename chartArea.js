@@ -1,7 +1,5 @@
-// ===========================
-// PURE CANVAS AREA CHART WITH RANGE SELECTOR
-// ===========================
 
+//set variables
 let areaCanvas = null;
 let areaCtx = null;
 
@@ -22,17 +20,15 @@ let areaHoverX = 0;
 let areaHoverY = 0;
 
 
-// ===========================
-// INITIALISATION
-// ===========================
 
+// Initialize the area chart and set up event listeners
 function initAreaChart() {
   areaCanvas = document.getElementById("areaChart");
   if (!areaCanvas) {
     console.error('No canvas found with id="areaChart"');
     return;
   }
-
+// Set canvas 
   areaCtx = areaCanvas.getContext("2d");
 
   resizeAreaCanvas();
@@ -47,6 +43,7 @@ function initAreaChart() {
   renderAreaChart();
 }
 
+// Resize the area chart canvas to fit its container
 function resizeAreaCanvas() {
   if (!areaCanvas) return;
   const container = areaCanvas.parentElement;
@@ -62,10 +59,8 @@ function resizeAreaCanvas() {
   areaPlotArea.bottom = areaCanvas.height - 70;
 }
 
-// ===========================
-// DATA UPDATE
-// ===========================
 
+// Update the area chart data and redraw
 function updateAreaChart() {
   if (!areaCtx) {
     initAreaChart();
@@ -143,10 +138,8 @@ function updateAreaChart() {
   updateAreaRangeSelector();
 }
 
-// ===========================
-// RENDERING
-// ===========================
 
+// Render the area chart, axes, labels, and data
 function renderAreaChart() {
   if (!areaCtx || !areaCanvas) return;
 
@@ -346,6 +339,7 @@ areaCtx.stroke();
   }
 }
 
+// Draw the hover tooltip for the area chart
 function drawAreaHoverTooltip(index, left, stepX, yToPixel, plotTop) {
   const x = left + index * stepX;
 
@@ -441,10 +435,8 @@ function drawAreaHoverTooltip(index, left, stepX, yToPixel, plotTop) {
   });
 }
 
-// ===========================
-// RANGE SELECTOR
-// ===========================
 
+// Update the range selector UI and logic
 function updateAreaRangeSelector() {
   let rangeContainer = document.getElementById("areaRangeSelector");
 
@@ -668,6 +660,7 @@ document.addEventListener("mouseup", () => {
   }
 }
 
+// Render the mini area chart for range selection
 function renderMiniAreaChart() {
   if (!miniAreaCtx || !miniAreaCanvas || !fullAreaLabels.length || !fullAreaDatasets.length)
     return;
@@ -719,10 +712,9 @@ function renderMiniAreaChart() {
   });
 }
 
-// ===========================
-// INTERACTION HANDLERS
-// ===========================
 
+
+// Handle mouse movement over the area chart
 function handleAreaMouseMove(e) {
   if (!areaCanvas || !visibleAreaLabels.length) return;
   const rect = areaCanvas.getBoundingClientRect();
@@ -753,11 +745,13 @@ function handleAreaMouseMove(e) {
   renderAreaChart();
 }
 
+// Handle mouse leaving the area chart
 function handleAreaMouseLeave() {
   areaHoverIndex = null;
   renderAreaChart();
 }
 
+// Force a resize and redraw of the area chart
 function forceAreaChartResize() {
   if (!areaCanvas) return;
 

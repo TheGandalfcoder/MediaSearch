@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   const rawData = [
-    {
+    {//raw data 
       "company_name": "AMAZON",
       "years": [
         {
@@ -472,9 +472,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   ];
 
-  // ===========================
-  // SHARED STATE & UTILITIES
-  // ===========================
   
   // Make data and utilities globally accessible
   window.mediaData = {
@@ -647,7 +644,7 @@ document.addEventListener("DOMContentLoaded", () => {
       comparisonArea.classList.remove('has-data');
     }
   }
-
+//log streams to ints 
   function streamToInt(stream) {
     switch (stream) {
       case "HBO": return 1;
@@ -659,7 +656,7 @@ document.addEventListener("DOMContentLoaded", () => {
       default: return 0;
     }
   }
-
+//log values 
   function logSelectedIntValues() {
     console.clear();
     console.log("Selected streams:", [...window.mediaData.selectedStreams]);
@@ -668,9 +665,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ===========================
-  // CHART TYPE SWITCHING
-  // ===========================
+ //chart type switching
 
   function updateActiveChart() {
   switch (window.mediaData.currentChartType) {

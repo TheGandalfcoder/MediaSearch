@@ -1,7 +1,4 @@
-// ===========================
-// SIMPLE BUBBLE CHART - Easy to understand version with gentle animation
-// ===========================
-
+//declare variables
 let bubbleCanvas = null;
 let bubbleCtx = null;
 let bubbles = [];

@@ -1,5 +1,5 @@
 
-
+//declare
 let lineCanvas = null;
 let lineCtx = null;
 
@@ -81,9 +81,7 @@ const eventMarkers = [
 // Cached event marker positions for click detection
 let markerPositions = []; // [{ x, top, bottom, link }]
 
-// ===========================
-// INITIALISATION
-// ===========================
+
 
 function initLineChart() {
   lineCanvas = document.getElementById("comparisonChart");
@@ -124,9 +122,7 @@ function resizeLineCanvas() {
   plotArea.bottom = lineCanvas.height - 70;
 }
 
-// ===========================
-// DATA UPDATE
-// ===========================
+
 
 function updateLineChart() {
   if (!lineCtx) {
@@ -206,9 +202,7 @@ function updateLineChart() {
   updateRangeSelector();
 }
 
-// ===========================
-// RENDERING
-// ===========================
+
 
 function renderLineChart() {
   if (!lineCtx || !lineCanvas) return;
@@ -488,9 +482,7 @@ function drawHoverTooltip(index, left, stepX, yToPixel, plotTop) {
   });
 }
 
-// ===========================
-// EVENT MARKERS (CANVAS)
-// ===========================
+
 
 function drawEventMarkersOnCanvas(left, right, top, bottom, stepX) {
   markerPositions = [];
@@ -537,9 +529,7 @@ function drawEventMarkersOnCanvas(left, right, top, bottom, stepX) {
   });
 }
 
-// ===========================
-// RANGE SELECTOR + MINI CHART
-// ===========================
+
 
 function updateRangeSelector() {
   let rangeContainer = document.getElementById("rangeSelector");
@@ -789,9 +779,7 @@ function renderMiniChart() {
   });
 }
 
-// ===========================
-// INTERACTION HANDLERS
-// ===========================
+
 
 function handleLineMouseMove(e) {
   if (!lineCanvas || !visibleLabels.length) return;
