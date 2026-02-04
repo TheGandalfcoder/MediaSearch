@@ -673,60 +673,53 @@ document.addEventListener("DOMContentLoaded", () => {
   // ===========================
 
   function updateActiveChart() {
-    switch(window.mediaData.currentChartType) {
-      case 'line':
-        if (typeof updateLineChart === 'function') {
-          updateLineChart();
-        }
-        break;
-      case 'bubble':
-        if (typeof updateBubbleChart === 'function') {
-          updateBubbleChart();
-        }
-        break;
-      case 'bar':
-        if (typeof updateBarChart === 'function') {
-          updateBarChart();
-        }
-        break;
-      case 'pie':
-        if (typeof updatePieChart === 'function') {
-          updatePieChart();
-        }
-        break;
-      case 'scatter':
-        if (typeof updateScatterChart === 'function') {
-          updateScatterChart();
-        }
-        break;
-        case 'racing':
-         if (typeof updateRacingChart === 'function') {
-         updateRacingChart();
-        }
-        
-  break;
-  case 'area':
-  if (typeof updateAreaChart === 'function') {
-    updateAreaChart();
+  switch (window.mediaData.currentChartType) {
+    case "line":
+      if (typeof updateLineChart === "function") updateLineChart();
+      break;
+
+    case "bubble":
+      if (typeof updateBubbleChart === "function") updateBubbleChart();
+      break;
+
+    case "bar":
+      if (typeof updateBarChart === "function") updateBarChart();
+      break;
+
+    case "pie":
+      if (typeof updatePieChart === "function") updatePieChart();
+      break;
+
+    case "scatter":
+      if (typeof updateScatterChart === "function") updateScatterChart();
+      break;
+
+    case "racing":
+      if (typeof updateRacingChart === "function") updateRacingChart();
+      break;
+
+    case "area":
+      if (typeof updateAreaChart === "function") updateAreaChart();
+      forceAreaChartResize();
+      break;
+
+    case "heatmap":
+      if (typeof updateHeatmap === "function") updateHeatmap();
+      break;
   }
-  break;
-case 'heatmap':
-  if (typeof updateHeatmap === 'function') {
-    updateHeatmap();
-  }
-  break;
-      case 'area':
-        if (typeof updateAreaChart === 'function') {
-          updateAreaChart();
-        }
-        break;
-        case 'area':
-  if (typeof updateStackedAreaChart === 'function') {
-    updateStackedAreaChart();
-  }
-  break;
-    }
-  }
+}
+
+
+  function forceAreaChartResize() {
+  if (typeof resizeAreaCanvas !== "function") return;
+  if (typeof renderAreaChart !== "function") return;
+
+  requestAnimationFrame(() => {
+    resizeAreaCanvas();
+    renderAreaChart();
+  });
+}
+
 
   // Chart type button listeners (assuming you have buttons for chart types)
   document.querySelectorAll('[data-chart-type]').forEach(btn => {

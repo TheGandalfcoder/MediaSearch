@@ -1,18 +1,4 @@
-// ===========================
-// PURE CANVAS LINE CHART WITH RANGE SELECTOR & EVENT MARKERS
-// ===========================
-//
-// Replaces the previous Chart.js-based implementation.
-// Public API kept the same:
-//   - initLineChart()
-//   - updateLineChart()
-//   - updateRangeSelector()
-//
-// It still reads data from:
-//   - window.mediaData.rawData
-//   - window.mediaData.selectedStreams
-//   - window.mediaUtils.extractSeries(company)
-//   - window.mediaUtils.companyColors[company]
+
 
 let lineCanvas = null;
 let lineCtx = null;
@@ -35,6 +21,23 @@ let plotArea = { left: 70, right: 0, top: 70, bottom: 70 };
 let hoverIndex = null; // index into visibleLabels
 let hoverX = 0;
 let hoverY = 0;
+
+let isDragging = false;
+let dragMode = null;
+let activeHandle = null;
+
+
+window.addEventListener("mouseup", handleLineMouseUp);
+window.addEventListener("mouseleave", handleLineMouseUp);
+
+
+function handleLineMouseUp() {
+  isDragging = false;
+  dragMode = null;       // left handle / right handle / center
+  activeHandle = null;  // if you use one
+}
+
+
 
 // Event markers (same data as before)
 const eventMarkers = [
@@ -332,28 +335,35 @@ function renderLineChart() {
   }
 
   // Draw lines
-  visibleDatasets.forEach((ds) => {
-    lineCtx.strokeStyle = ds.color;
-    lineCtx.lineWidth = 3;
-    lineCtx.beginPath();
-    let started = false;
-    for (let i = 0; i < n; i++) {
-      const v = ds.data[i];
-      if (v == null) {
-        started = false;
-        continue;
-      }
-      const x = left + i * stepX;
-      const y = yToPixel(v);
-      if (!started) {
-        lineCtx.moveTo(x, y);
-        started = true;
-      } else {
-        lineCtx.lineTo(x, y);
-      }
+visibleDatasets.forEach((ds) => {
+  lineCtx.strokeStyle = ds.color;
+  lineCtx.lineWidth = 3;
+  lineCtx.beginPath();
+
+  let lastX = null;
+  let lastY = null;
+
+  for (let i = 0; i < n; i++) {
+    const v = ds.data[i];
+    if (v == null) continue;
+
+    const x = left + i * stepX;
+    const y = yToPixel(v);
+
+    if (lastX == null) {
+      lineCtx.moveTo(x, y);
+    } else {
+      lineCtx.lineTo(x, y);
     }
-    lineCtx.stroke();
-  });
+
+    lastX = x;
+    lastY = y;
+  }
+
+  lineCtx.stroke();
+});
+
+
 
   // Draw points (for hover feedback)
   visibleDatasets.forEach((ds) => {
@@ -641,8 +651,7 @@ function updateRangeSelector() {
   leftMask.style.width = "0%";
   rightMask.style.width = "0%";
 
-  let isDragging = false;
-  let dragMode = null;
+
   let startX = 0;
   let startLeft = 0;
   let startRight = 0;
@@ -725,8 +734,7 @@ function updateRangeSelector() {
   function onMouseUpRange() {
     isDragging = false;
     dragMode = null;
-    document.removeEventListener("mousemove", onMouseMoveRange);
-    document.removeEventListener("mouseup", onMouseUpRange);
+   
   }
 }
 

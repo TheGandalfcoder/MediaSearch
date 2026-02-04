@@ -21,6 +21,7 @@ let areaHoverIndex = null;
 let areaHoverX = 0;
 let areaHoverY = 0;
 
+
 // ===========================
 // INITIALISATION
 // ===========================
@@ -722,6 +723,16 @@ function handleAreaMouseLeave() {
   areaHoverIndex = null;
   renderAreaChart();
 }
+
+function forceAreaChartResize() {
+  if (!areaCanvas) return;
+
+  requestAnimationFrame(() => {
+    resizeAreaCanvas();
+    renderAreaChart();
+  });
+}
+
 
 // Initialize on load
 if (document.readyState === "loading") {
