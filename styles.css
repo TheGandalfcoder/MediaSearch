@@ -37,6 +37,7 @@ body {
     top: 0;
     z-index: 1000;
     box-shadow: var(--shadow);
+    width:100%
 }
 
 .nav-container {
@@ -606,5 +607,100 @@ body {
 
 }
 
+/* Chart Container Styles */
+.chart-container {
+  width: 100%;
+  min-height: 400px;
+  position: relative;
+}
 
+.chart-container canvas {
+  max-height: 500px;
+}
+
+/* Hide empty state when charts are active */
+.comparison-area.has-data .empty-state {
+  display: none;
+}
+
+.comparison-area:not(.has-data) .empty-state {
+  display: block;
+}
+
+/* Visualization option active state */
+.viz-option {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.viz-option.active {
+  background-color: #3B82F6;
+  color: white;
+  font-weight: 600;
+}
+
+.viz-option:hover {
+  background-color: #f0f0f0;
+}
+
+.viz-option.active:hover {
+  background-color: #2563EB;
+}
+
+/* Bubble Chart Styles */
+#bubbleChart {
+  width: 100%;
+  height: 600px;
+  border-radius: 8px;
+  background: #1a1a1a;
+}
+
+.chart-container[data-chart-container="bubble"] {
+  background: #1a1a1a;
+  border-radius: 8px;
+  padding: 20px;
+}
+.chart-container[data-chart-container="heatmap"] {
+  background: #1a1a1a;
+  border-radius: 8px;
+  padding: 0px;
+}
+
+/* Dark theme for line chart container */
+.chart-container[data-chart-container="line"] {
+  background: #1a1a1a;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+#comparisonChart {
+  background: #1a1a1a;
+  border-radius: 8px;
+}
+
+/* Add this to your styles.css */
+
+/* Dark theme for area chart */
+.chart-container[data-chart-container="area"] {
+  background: #1a1a1a;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+#areaChart {
+  background: #1a1a1a;
+  border-radius: 8px;
+}
+
+/* Dark theme for bubble chart */
+.chart-container[data-chart-container="bubble"] {
+  background: #1a1a1a;
+  border-radius: 8px;
+  padding: 0px;
+}
+
+#bubbleChart {
+  background: #1a1a1a;
+  border-radius: 8px;
+}
 
