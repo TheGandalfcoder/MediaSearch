@@ -119,7 +119,7 @@ function drawHeatmap(companiesData, timeline) {
 
   // Title
   heatmapCtx.fillStyle = '#ffffff';
-  heatmapCtx.font = 'bold 18px Arial';
+  heatmapCtx.font = '16px Arial';
   heatmapCtx.textAlign = 'center';
   heatmapCtx.fillText('Growth Rate Heat Map', width / 2, 30);
 

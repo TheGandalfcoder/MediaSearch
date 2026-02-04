@@ -67,14 +67,20 @@ function initLineChart() {
         intersect: false
       },
       plugins: {
-        legend: {
-          position: "bottom",
-          labels: {
-            color: '#ffffff',
-            font: {
-              size: 12
-            }
+        title: {
+          display: true,
+          text: 'Subscriber Growth Over Time',
+          color: '#ffffff',
+          font: {
+            size: 16
+          },
+          padding: {
+            top: 10,
+            bottom: 20
           }
+        },
+        legend: {
+          display: false
         },
         tooltip: {
           backgroundColor: 'rgba(0, 0, 0, 0.9)',

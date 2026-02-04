@@ -1,382 +1,249 @@
 // ===========================
-// ANIMATED BUBBLE CHART (Like CryptoBubbles)
+// SIMPLE BUBBLE CHART - Easy to understand version with gentle animation
 // ===========================
 
 let bubbleCanvas = null;
 let bubbleCtx = null;
-let animationFrameId = null;
 let bubbles = [];
-let isAnimating = false;
-let draggedBubble = null;
 let hoveredBubble = null;
-let mouseX = 0;
-let mouseY = 0;
+let animationFrameId = null;
+let isAnimating = false;
 
-// Bubble class for physics simulation
-class Bubble {
-  constructor(company, value, color, label, canvasWidth, canvasHeight) {
-    this.company = company;
-    this.value = value;
-    this.radius = Math.sqrt(value) * 8; // Scale radius based on subscribers
-    this.color = color;
-    this.label = label;
-    
-    // Random starting position within canvas bounds
-    this.x = Math.random() * (canvasWidth - this.radius * 2) + this.radius;
-    this.y = Math.random() * (canvasHeight - this.radius * 2) + this.radius;
-    
-    // Much slower, gentler velocity
-    this.vx = (Math.random() - 0.5) * 0.5;
-    this.vy = (Math.random() - 0.5) * 0.5;
-    
-    // For collision detection
-    this.mass = this.radius;
-    
-    // Dragging state
-    this.isDragging = false;
-    this.isHovered = false;
-  }
+// Simple bubble object with gentle floating animation
+function createBubble(company, value, color) {
+  const radius = Math.sqrt(value) * 8;
   
-  contains(x, y) {
-    const dx = x - this.x;
-    const dy = y - this.y;
-    return Math.sqrt(dx * dx + dy * dy) <= this.radius;
-  }
-  
-  update(width, height, bubbles) {
-    // Don't apply physics if being dragged
-    if (this.isDragging) {
-      this.vx = 0;
-      this.vy = 0;
-      return;
-    }
-    
-    // Apply velocity
-    this.x += this.vx;
-    this.y += this.vy;
-    
-    // Stronger damping (more friction) for gentler movement
-    this.vx *= 0.98;
-    this.vy *= 0.98;
-    
-    // Gentle bounce off walls (much less violent)
-    if (this.x - this.radius < 0) {
-      this.x = this.radius;
-      this.vx *= -0.3; // Much less bounce
-    }
-    if (this.x + this.radius > width) {
-      this.x = width - this.radius;
-      this.vx *= -0.3;
-    }
-    if (this.y - this.radius < 0) {
-      this.y = this.radius;
-      this.vy *= -0.3;
-    }
-    if (this.y + this.radius > height) {
-      this.y = height - this.radius;
-      this.vy *= -0.3;
-    }
-    
-    // Collision with other bubbles (gentler)
-    bubbles.forEach(other => {
-      if (other === this || other.isDragging) return;
-      
-      const dx = other.x - this.x;
-      const dy = other.y - this.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      const minDist = this.radius + other.radius;
-      
-      if (distance < minDist && distance > 0) {
-        // Collision detected - push apart gently
-        const angle = Math.atan2(dy, dx);
-        const targetX = this.x + Math.cos(angle) * minDist;
-        const targetY = this.y + Math.sin(angle) * minDist;
-        
-        // Much gentler collision response
-        const ax = (targetX - other.x) * 0.02;
-        const ay = (targetY - other.y) * 0.02;
-        
-        this.vx -= ax;
-        this.vy -= ay;
-        other.vx += ax;
-        other.vy += ay;
-      }
-    });
-    
-    // Very gentle drift toward center
-    const centerX = width / 2;
-    const centerY = height / 2;
-    const toCenterX = (centerX - this.x) * 0.0002;
-    const toCenterY = (centerY - this.y) * 0.0002;
-    this.vx += toCenterX;
-    this.vy += toCenterY;
-  }
-  
-  draw(ctx) {
-    // Highlight if hovered or dragged
-    const isHighlighted = this.isHovered || this.isDragging;
-    
-    // Draw bubble shadow
-    ctx.beginPath();
-    ctx.arc(this.x + 2, this.y + 2, this.radius, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-    ctx.fill();
-    
-    // Draw bubble
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-    ctx.fillStyle = this.color + (isHighlighted ? 'B0' : '90'); // More opaque when highlighted
-    ctx.fill();
-    
-    // Draw border (thicker when highlighted)
-    ctx.strokeStyle = this.color;
-    ctx.lineWidth = isHighlighted ? 4 : 3;
-    ctx.stroke();
-    
-    // Draw company name
-    ctx.fillStyle = '#fff';
-    ctx.font = isHighlighted ? 'bold 18px Arial' : 'bold 16px Arial';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-    ctx.shadowBlur = 4;
-    ctx.fillText(this.company, this.x, this.y - 5);
-    
-    // Draw value
-    ctx.font = isHighlighted ? 'bold 16px Arial' : '14px Arial';
-    ctx.fillText(`${this.value}M`, this.x, this.y + 15);
-    ctx.shadowBlur = 0;
-  }
-  
-  getTooltipData() {
-    const companyData = window.mediaData.rawData.find(c => c.company_name === this.company);
-    if (!companyData) return null;
-    
-    // Get latest quarter info
-    let latestYear = null;
-    let latestQuarter = null;
-    let previousValue = null;
-    let growthRate = 0;
-    
-    companyData.years.forEach(yearObj => {
-      yearObj.quarters.forEach(q => {
-        if (previousValue !== null) {
-          growthRate = ((q.subCountMillion - previousValue) / previousValue) * 100;
-        }
-        previousValue = q.subCountMillion;
-        latestYear = yearObj.year;
-        latestQuarter = q.quarter;
-      });
-    });
-    
-    return {
-      company: this.company,
-      subscribers: this.value,
-      year: latestYear,
-      quarter: latestQuarter,
-      growthRate: growthRate.toFixed(2)
-    };
-  }
-}
-
-function initBubbleChart() {
-  bubbleCanvas = document.getElementById("bubbleChart");
-  if (!bubbleCanvas) {
-    console.error('No canvas found with id="bubbleChart"');
-    return;
-  }
-  
-  bubbleCtx = bubbleCanvas.getContext('2d');
-  
-  // Set canvas size properly
-  resizeBubbleCanvas();
-  window.addEventListener('resize', resizeBubbleCanvas);
-  
-  // Add mouse event listeners
-  bubbleCanvas.addEventListener('mousedown', handleMouseDown);
-  bubbleCanvas.addEventListener('mousemove', handleMouseMove);
-  bubbleCanvas.addEventListener('mouseup', handleMouseUp);
-  bubbleCanvas.addEventListener('mouseleave', handleMouseLeave);
-}
-
-function resizeBubbleCanvas() {
-  if (!bubbleCanvas) return;
-  
-  const container = bubbleCanvas.parentElement;
-  const rect = container.getBoundingClientRect();
-  
-  // Set actual canvas resolution
-  bubbleCanvas.width = rect.width;
-  bubbleCanvas.height = Math.max(600, rect.height);
-  
-  // Set display size (CSS)
-  bubbleCanvas.style.width = rect.width + 'px';
-  bubbleCanvas.style.height = Math.max(600, rect.height) + 'px';
-}
-
-function getMousePos(event) {
-  const rect = bubbleCanvas.getBoundingClientRect();
   return {
-    x: event.clientX - rect.left,
-    y: event.clientY - rect.top
+    company: company,
+    value: value,
+    radius: radius,
+    color: color,
+    baseX: 0, // Base position (will be set)
+    baseY: 0, // Base position (will be set)
+    x: 0,     // Current position (for animation)
+    y: 0,     // Current position (for animation)
+    floatOffset: Math.random() * Math.PI * 2, // Random starting point for float animation
+    floatSpeed: 0.5 + Math.random() * 0.5 // Random speed between 0.5 and 1.0
   };
 }
 
-function handleMouseDown(event) {
-  const pos = getMousePos(event);
-  
-  // Check if clicking on a bubble (reverse order to get topmost)
-  for (let i = bubbles.length - 1; i >= 0; i--) {
-    if (bubbles[i].contains(pos.x, pos.y)) {
-      draggedBubble = bubbles[i];
-      draggedBubble.isDragging = true;
-      bubbleCanvas.style.cursor = 'grabbing';
-      break;
-    }
-  }
+// Check if mouse is inside a bubble
+function isPointInBubble(x, y, bubble) {
+  const dx = x - bubble.x;
+  const dy = y - bubble.y;
+  const distance = Math.sqrt(dx * dx + dy * dy);
+  return distance <= bubble.radius;
 }
 
-function handleMouseMove(event) {
-  const pos = getMousePos(event);
-  mouseX = pos.x;
-  mouseY = pos.y;
+// Draw a single bubble on the canvas
+function drawBubble(bubble, isHovered) {
+  const ctx = bubbleCtx;
   
-  // If dragging, move the bubble
-  if (draggedBubble) {
-    draggedBubble.x = pos.x;
-    draggedBubble.y = pos.y;
-    return;
-  }
+  // Make hovered bubbles brighter
+  const opacity = isHovered ? 'CC' : '90';
   
-  // Check for hover
-  let foundHover = false;
-  for (let i = bubbles.length - 1; i >= 0; i--) {
-    if (bubbles[i].contains(pos.x, pos.y)) {
-      hoveredBubble = bubbles[i];
-      hoveredBubble.isHovered = true;
-      bubbleCanvas.style.cursor = 'grab';
-      foundHover = true;
-      break;
-    }
-  }
+  // Draw shadow
+  ctx.beginPath();
+  ctx.arc(bubble.x + 2, bubble.y + 2, bubble.radius, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+  ctx.fill();
   
-  if (!foundHover) {
-    if (hoveredBubble) {
-      hoveredBubble.isHovered = false;
-    }
-    hoveredBubble = null;
-    bubbleCanvas.style.cursor = 'default';
-  }
+  // Draw bubble circle
+  ctx.beginPath();
+  ctx.arc(bubble.x, bubble.y, bubble.radius, 0, Math.PI * 2);
+  ctx.fillStyle = bubble.color + opacity;
+  ctx.fill();
+  
+  // Draw border
+  ctx.strokeStyle = bubble.color;
+  ctx.lineWidth = isHovered ? 4 : 3;
+  ctx.stroke();
+  
+  // Draw company name
+  ctx.fillStyle = '#fff';
+  ctx.font = isHovered ? 'bold 18px Arial' : 'bold 16px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+  ctx.shadowBlur = 4;
+  ctx.fillText(bubble.company, bubble.x, bubble.y - 5);
+  
+  // Draw subscriber count
+  ctx.font = isHovered ? 'bold 16px Arial' : '14px Arial';
+  ctx.fillText(`${bubble.value}M`, bubble.x, bubble.y + 15);
+  ctx.shadowBlur = 0;
 }
 
-function handleMouseUp() {
-  if (draggedBubble) {
-    draggedBubble.isDragging = false;
-    draggedBubble = null;
-    bubbleCanvas.style.cursor = hoveredBubble ? 'grab' : 'default';
-  }
-}
-
-function handleMouseLeave() {
-  if (draggedBubble) {
-    draggedBubble.isDragging = false;
-    draggedBubble = null;
-  }
-  if (hoveredBubble) {
-    hoveredBubble.isHovered = false;
-    hoveredBubble = null;
-  }
-  bubbleCanvas.style.cursor = 'default';
-}
-
-function updateBubbleChart() {
-  const selectedStreams = window.mediaData.selectedStreams;
+// Position bubbles in a grid layout, accounting for bubble size
+function positionBubbles() {
+  if (bubbles.length === 0) return;
   
-  // Stop existing animation
-  if (animationFrameId) {
-    cancelAnimationFrame(animationFrameId);
-    animationFrameId = null;
-  }
-  isAnimating = false;
+  const canvasWidth = bubbleCanvas.width;
+  const canvasHeight = bubbleCanvas.height;
   
-  if (selectedStreams.size === 0) {
-    bubbles = [];
-    draggedBubble = null;
-    hoveredBubble = null;
-    if (bubbleCtx && bubbleCanvas) {
-      bubbleCtx.fillStyle = '#1a1a1a';
-      bubbleCtx.fillRect(0, 0, bubbleCanvas.width, bubbleCanvas.height);
-    }
-    return;
-  }
-  
-  // Ensure canvas is properly sized
-  resizeBubbleCanvas();
-  
-  // Create bubbles for selected streams
-  bubbles = [];
-  
-  selectedStreams.forEach(stream => {
-    const company = window.mediaUtils.streamToCompany(stream);
-    if (!company) return;
-    
-    const companyData = window.mediaData.rawData.find(c => c.company_name === company);
-    if (!companyData) return;
-    
-    // Get the most recent subscriber count
-    let latestValue = 0;
-    let latestLabel = '';
-    
-    companyData.years.forEach(yearObj => {
-      yearObj.quarters.forEach(q => {
-        latestValue = q.subCountMillion;
-        latestLabel = `${yearObj.year} Q${q.quarter}`;
-      });
-    });
-    
-    const color = window.mediaUtils.companyColors[company] || '#000000';
-    const bubble = new Bubble(company, latestValue, color, latestLabel, bubbleCanvas.width, bubbleCanvas.height);
-    bubbles.push(bubble);
+  // Find the largest radius to ensure proper spacing
+  let maxRadius = 0;
+  bubbles.forEach(bubble => {
+    if (bubble.radius > maxRadius) maxRadius = bubble.radius;
   });
   
-  // Start animation
-  if (!isAnimating) {
-    isAnimating = true;
-    animate();
+  // Calculate safe margins (bubbles need space for their radius + padding)
+  const padding = 20;
+  const safeMargin = maxRadius + padding;
+  const usableWidth = canvasWidth - (safeMargin * 2);
+  const usableHeight = canvasHeight - (safeMargin * 2);
+  
+  // Simple layout: arrange in rows
+  const bubblesPerRow = bubbles.length <= 3 ? bubbles.length : 3;
+  const rows = Math.ceil(bubbles.length / bubblesPerRow);
+  
+  // Calculate spacing with safe margins
+  const spacingX = usableWidth / Math.max(1, bubblesPerRow - 1);
+  const spacingY = usableHeight / Math.max(1, rows - 1);
+  
+  bubbles.forEach((bubble, index) => {
+    const row = Math.floor(index / bubblesPerRow);
+    const col = index % bubblesPerRow;
+    
+    // Center horizontally if fewer bubbles than columns
+    let x, y;
+    
+    if (bubblesPerRow === 1) {
+      // Single column - center it
+      x = canvasWidth / 2;
+    } else {
+      // Multiple columns - space them evenly
+      x = safeMargin + (col * spacingX);
+    }
+    
+    if (rows === 1) {
+      // Single row - center vertically
+      y = canvasHeight / 2;
+    } else {
+      // Multiple rows - space them evenly
+      y = safeMargin + (row * spacingY);
+    }
+    
+    // Set base position (for animation to float around)
+    bubble.baseX = x;
+    bubble.baseY = y;
+    bubble.x = x;
+    bubble.y = y;
+  });
+}
+
+// Update bubble positions for gentle floating animation
+function updateBubblePositions() {
+  const time = Date.now() * 0.001; // Convert to seconds
+  
+  bubbles.forEach(bubble => {
+    // Skip animation if hovering (keeps it stable)
+    if (bubble === hoveredBubble) {
+      bubble.x = bubble.baseX;
+      bubble.y = bubble.baseY;
+      return;
+    }
+    
+    // Gentle floating: small circular motion around base position
+    const floatAmount = 8; // How far bubbles float (in pixels)
+    const angle = time * bubble.floatSpeed + bubble.floatOffset;
+    
+    bubble.x = bubble.baseX + Math.cos(angle) * floatAmount;
+    bubble.y = bubble.baseY + Math.sin(angle) * floatAmount;
+  });
+}
+
+// Draw everything on the canvas
+function drawChart() {
+  if (!bubbleCtx || !bubbleCanvas) return;
+  
+  // Clear canvas with dark background
+  bubbleCtx.fillStyle = '#1a1a1a';
+  bubbleCtx.fillRect(0, 0, bubbleCanvas.width, bubbleCanvas.height);
+  
+  // Draw title
+  bubbleCtx.fillStyle = '#ffffff';
+  bubbleCtx.font = '16px Arial';
+  bubbleCtx.textAlign = 'center';
+  bubbleCtx.fillText('Current Subscriber Counts', bubbleCanvas.width / 2, 30);
+  
+  // Update positions for animation
+  updateBubblePositions();
+  
+  // Draw each bubble
+  bubbles.forEach(bubble => {
+    const isHovered = bubble === hoveredBubble;
+    drawBubble(bubble, isHovered);
+  });
+  
+  // Draw tooltip if hovering
+  if (hoveredBubble) {
+    drawTooltip(hoveredBubble);
   }
 }
 
-function drawTooltip(ctx, bubble) {
-  const tooltipData = bubble.getTooltipData();
-  if (!tooltipData) return;
+// Animation loop - simple and gentle
+function animate() {
+  if (!isAnimating || !bubbleCanvas) return;
   
-  // Tooltip content
+  drawChart();
+  animationFrameId = requestAnimationFrame(animate);
+}
+
+// Simple tooltip - just shows basic info
+function drawTooltip(bubble) {
+  const ctx = bubbleCtx;
+  const mouseX = hoveredBubble.mouseX || bubble.x;
+  const mouseY = hoveredBubble.mouseY || bubble.y - bubble.radius - 30;
+  
+  // Get company data for tooltip
+  const companyData = window.mediaData.rawData.find(c => c.company_name === bubble.company);
+  if (!companyData) return;
+  
+  // Find latest quarter
+  let latestYear = null;
+  let latestQuarter = null;
+  let latestValue = 0;
+  
+  companyData.years.forEach(yearObj => {
+    yearObj.quarters.forEach(q => {
+      latestValue = q.subCountMillion;
+      latestYear = yearObj.year;
+      latestQuarter = q.quarter;
+    });
+  });
+  
+  // Tooltip text
   const lines = [
-    tooltipData.company,
-    `Subscribers: ${tooltipData.subscribers}M`,
-    `Period: ${tooltipData.year} Q${tooltipData.quarter}`,
-    `Growth: ${tooltipData.growthRate}%`
+    bubble.company,
+    `Subscribers: ${latestValue}M`,
+    `Period: ${latestYear} Q${latestQuarter}`
   ];
   
-  // Tooltip dimensions
-  const padding = 12;
-  const lineHeight = 20;
-  const fontSize = 14;
+  // Calculate tooltip size
+  const padding = 10;
+  const lineHeight = 18;
+  const fontSize = 13;
   ctx.font = `${fontSize}px Arial`;
   
-  const maxWidth = Math.max(...lines.map(line => ctx.measureText(line).width));
+  let maxWidth = 0;
+  lines.forEach(line => {
+    const width = ctx.measureText(line).width;
+    if (width > maxWidth) maxWidth = width;
+  });
+  
   const tooltipWidth = maxWidth + padding * 2;
   const tooltipHeight = lines.length * lineHeight + padding * 2;
   
-  // Position tooltip near mouse, but keep it on screen
+  // Position tooltip (keep it on screen)
   let tooltipX = mouseX + 15;
-  let tooltipY = mouseY + 15;
+  let tooltipY = mouseY - tooltipHeight - 10;
   
   if (tooltipX + tooltipWidth > bubbleCanvas.width) {
     tooltipX = mouseX - tooltipWidth - 15;
   }
-  if (tooltipY + tooltipHeight > bubbleCanvas.height) {
-    tooltipY = mouseY - tooltipHeight - 15;
+  if (tooltipY < 0) {
+    tooltipY = mouseY + 30;
   }
   
   // Draw tooltip background
@@ -384,7 +251,7 @@ function drawTooltip(ctx, bubble) {
   ctx.strokeStyle = bubble.color;
   ctx.lineWidth = 2;
   
-  // Rounded rectangle
+  // Simple rounded rectangle (draw manually for compatibility)
   const radius = 6;
   ctx.beginPath();
   ctx.moveTo(tooltipX + radius, tooltipY);
@@ -418,53 +285,161 @@ function drawTooltip(ctx, bubble) {
   });
 }
 
-function animate() {
-  if (!bubbleCtx || !bubbleCanvas || !isAnimating) return;
-  
-  // Clear canvas with dark background
-  bubbleCtx.fillStyle = '#1a1a1a';
-  bubbleCtx.fillRect(0, 0, bubbleCanvas.width, bubbleCanvas.height);
-  
-  // Reset hover states
-  bubbles.forEach(b => {
-    if (b !== hoveredBubble) {
-      b.isHovered = false;
-    }
-  });
-  
-  // Update and draw all bubbles
-  bubbles.forEach(bubble => {
-    bubble.update(bubbleCanvas.width, bubbleCanvas.height, bubbles);
-    bubble.draw(bubbleCtx);
-  });
-  
-  // Draw tooltip if hovering
-  if (hoveredBubble && !draggedBubble) {
-    drawTooltip(bubbleCtx, hoveredBubble);
+// Initialize the bubble chart
+function initBubbleChart() {
+  bubbleCanvas = document.getElementById("bubbleChart");
+  if (!bubbleCanvas) {
+    console.error('No canvas found with id="bubbleChart"');
+    return;
   }
   
-  // Continue animation
-  animationFrameId = requestAnimationFrame(animate);
+  bubbleCtx = bubbleCanvas.getContext('2d');
+  
+  // Set canvas size
+  resizeBubbleCanvas();
+  window.addEventListener('resize', resizeBubbleCanvas);
+  
+  // Add mouse event listeners
+  bubbleCanvas.addEventListener('mousemove', handleMouseMove);
+  bubbleCanvas.addEventListener('mouseleave', handleMouseLeave);
 }
 
-// Cleanup function
-function destroyBubbleChart() {
+// Resize canvas when window resizes
+function resizeBubbleCanvas() {
+  if (!bubbleCanvas) return;
+  
+  const container = bubbleCanvas.parentElement;
+  const rect = container.getBoundingClientRect();
+  
+  // Set canvas size - use actual container dimensions
+  bubbleCanvas.width = rect.width;
+  bubbleCanvas.height = Math.max(600, rect.height);
+  
+  // Set display size
+  bubbleCanvas.style.width = rect.width + 'px';
+  bubbleCanvas.style.height = Math.max(600, rect.height) + 'px';
+  
+  // Reposition and redraw if we have bubbles
+  if (bubbles.length > 0) {
+    positionBubbles();
+    drawChart();
+  }
+}
+
+// Handle mouse movement
+function handleMouseMove(event) {
+  const rect = bubbleCanvas.getBoundingClientRect();
+  const mouseX = event.clientX - rect.left;
+  const mouseY = event.clientY - rect.top;
+  
+  // Check which bubble is under the mouse
+  let foundHover = false;
+  
+  // Check from top to bottom (last bubble drawn is on top)
+  for (let i = bubbles.length - 1; i >= 0; i--) {
+    if (isPointInBubble(mouseX, mouseY, bubbles[i])) {
+      hoveredBubble = bubbles[i];
+      hoveredBubble.mouseX = mouseX;
+      hoveredBubble.mouseY = mouseY;
+      bubbleCanvas.style.cursor = 'pointer';
+      foundHover = true;
+      break;
+    }
+  }
+  
+  // No bubble under mouse
+  if (!foundHover) {
+    if (hoveredBubble) {
+      hoveredBubble = null;
+      bubbleCanvas.style.cursor = 'default';
+    }
+  }
+}
+
+// Handle mouse leaving canvas
+function handleMouseLeave() {
+  if (hoveredBubble) {
+    hoveredBubble = null;
+    bubbleCanvas.style.cursor = 'default';
+  }
+}
+
+// Start animation loop
+function startAnimation() {
+  if (!isAnimating && bubbles.length > 0) {
+    isAnimating = true;
+    animate();
+  }
+}
+
+// Stop animation loop
+function stopAnimation() {
   isAnimating = false;
   if (animationFrameId) {
     cancelAnimationFrame(animationFrameId);
     animationFrameId = null;
   }
-  window.removeEventListener('resize', resizeBubbleCanvas);
-  
-  if (bubbleCanvas) {
-    bubbleCanvas.removeEventListener('mousedown', handleMouseDown);
-    bubbleCanvas.removeEventListener('mousemove', handleMouseMove);
-    bubbleCanvas.removeEventListener('mouseup', handleMouseUp);
-    bubbleCanvas.removeEventListener('mouseleave', handleMouseLeave);
-  }
 }
 
-// Initialize on load
+// Update the bubble chart with new data
+function updateBubbleChart() {
+  const selectedStreams = window.mediaData.selectedStreams;
+  
+  // Stop animation
+  stopAnimation();
+  
+  // Clear bubbles if nothing selected
+  if (selectedStreams.size === 0) {
+    bubbles = [];
+    hoveredBubble = null;
+    if (bubbleCtx && bubbleCanvas) {
+      bubbleCtx.fillStyle = '#1a1a1a';
+      bubbleCtx.fillRect(0, 0, bubbleCanvas.width, bubbleCanvas.height);
+    }
+    return;
+  }
+  
+  // Make sure canvas is sized correctly
+  resizeBubbleCanvas();
+  
+  // Create bubbles for each selected stream
+  bubbles = [];
+  
+  selectedStreams.forEach(stream => {
+    const company = window.mediaUtils.streamToCompany(stream);
+    if (!company) return;
+    
+    const companyData = window.mediaData.rawData.find(c => c.company_name === company);
+    if (!companyData) return;
+    
+    // Find the latest subscriber count
+    let latestValue = 0;
+    
+    companyData.years.forEach(yearObj => {
+      yearObj.quarters.forEach(q => {
+        latestValue = q.subCountMillion;
+      });
+    });
+    
+    // Get color for this company
+    const color = window.mediaUtils.companyColors[company] || '#000000';
+    
+    // Create bubble
+    const bubble = createBubble(company, latestValue, color);
+    bubbles.push(bubble);
+  });
+  
+  // Position bubbles in a grid (accounting for size)
+  positionBubbles();
+  
+  // Draw initial frame
+  drawChart();
+  
+  // Start gentle animation
+  startAnimation();
+}
+
+// Initialize when page loads
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initBubbleChart);
 } else {

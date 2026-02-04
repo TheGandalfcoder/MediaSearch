@@ -524,9 +524,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // ===========================
-  // BUTTON & SEARCH FUNCTIONALITY
-  // ===========================
 
   const draggableButtons = document.querySelectorAll(".comparison-link");
   const dropZone = document.getElementById("dropZone");
@@ -568,6 +565,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     item.addEventListener("click", () => {
       const stream = value.toUpperCase();
+
       if (window.mediaData.selectedStreams.has(stream)) {
         window.mediaData.selectedStreams.delete(stream);
         item.classList.remove("active");
@@ -591,6 +589,9 @@ document.addEventListener("DOMContentLoaded", () => {
     button.addEventListener("dragstart", (event) => {
       event.dataTransfer.setData("text/plain", button.id);
       event.dataTransfer.effectAllowed = "move";
+      
+      // Set custom drag image to show the logo instead of text
+     
     });
   });
 

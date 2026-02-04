@@ -1,5 +1,5 @@
 // ===========================
-// STACKED AREA CHART WITH RANGE SELECTOR
+// AREA CHART WITH RANGE SELECTOR (Same as line chart, just filled)
 // ===========================
 
 let areaChart = null;
@@ -23,36 +23,25 @@ function initAreaChart() {
     },
     options: {
       responsive: true,
-      maintainAspectRatio: false,
       interaction: {
         mode: "index",
         intersect: false
       },
       plugins: {
-        legend: {
-          position: "bottom",
-          labels: {
-            color: '#ffffff',
-            font: {
-              size: 14,
-              weight: 'bold'
-            },
-            padding: 20,
-            boxWidth: 15,
-            boxHeight: 15,
-            generateLabels: function(chart) {
-              // Custom legend labels with better styling
-              return chart.data.datasets.map((dataset, i) => ({
-                text: dataset.label,
-                fillStyle: dataset.borderColor,
-                strokeStyle: dataset.borderColor,
-                lineWidth: 3,
-                hidden: false,
-                index: i,
-                fontColor: '#ffffff'
-              }));
-            }
+        title: {
+          display: true,
+          text: 'Subscriber Growth Over Time',
+          color: '#ffffff',
+          font: {
+            size: 16
+          },
+          padding: {
+            top: 10,
+            bottom: 20
           }
+        },
+        legend: {
+          display: false
         },
         tooltip: {
           backgroundColor: 'rgba(0, 0, 0, 0.9)',
@@ -72,53 +61,42 @@ function initAreaChart() {
                 label += context.parsed.y + 'M subscribers';
               }
               return label;
-            },
-            footer: function(tooltipItems) {
-              let total = 0;
-              tooltipItems.forEach(item => {
-                total += item.parsed.y;
-              });
-              return 'Total Market: ' + total.toFixed(1) + 'M';
             }
           }
         },
-        title: {
-          display: true,
-          text: 'Streaming Market Share Over Time',
-          color: '#ffffff',
-          font: {
-            size: 18,
-            weight: 'bold'
+        zoom: {
+          zoom: {
+            wheel: {
+              enabled: false
+            },
+            pinch: {
+              enabled: false
+            },
+            mode: 'x'
           },
-          padding: 20
+          pan: {
+            enabled: true,
+            mode: 'x'
+          }
         }
       },
       scales: {
         y: {
-          stacked: true,
           beginAtZero: true,
           grid: {
             color: 'rgba(255, 255, 255, 0.1)',
             drawBorder: false
           },
           ticks: {
-            color: '#ffffff',
-            font: {
-              size: 12
-            }
+            color: '#ffffff'
           },
           title: {
             display: true,
-            text: "Total Subscribers (Millions)",
-            color: '#ffffff',
-            font: {
-              size: 14,
-              weight: 'bold'
-            }
+            text: "Subscribers (Millions)",
+            color: '#ffffff'
           }
         },
         x: {
-          stacked: true,
           grid: {
             color: 'rgba(255, 255, 255, 0.1)',
             drawBorder: false
@@ -126,19 +104,12 @@ function initAreaChart() {
           ticks: {
             color: '#ffffff',
             maxRotation: 45,
-            minRotation: 45,
-            font: {
-              size: 11
-            }
+            minRotation: 45
           },
           title: {
             display: true,
             text: "Year / Quarter",
-            color: '#ffffff',
-            font: {
-              size: 14,
-              weight: 'bold'
-            }
+            color: '#ffffff'
           }
         }
       }
@@ -163,82 +134,80 @@ function updateAreaChart() {
     return;
   }
 
-  // Collect all data points with their date keys
-  const allDataPoints = new Map();
-  
+  // Collect all unique quarter labels across all companies and sort them
+  // EXACTLY the same as line chart
+  const allLabelsSet = new Set();
+  const companyDataMap = new Map();
+
   selectedStreams.forEach(stream => {
     const company = window.mediaUtils.streamToCompany(stream);
     if (!company) return;
     
-    const companyData = window.mediaData.rawData.find(c => c.company_name === company);
-    if (!companyData) return;
+    const series = window.mediaUtils.extractSeries(company);
+    companyDataMap.set(company, series);
     
-    companyData.years.forEach(yearObj => {
-      yearObj.quarters.forEach(q => {
-        const dateKey = yearObj.year * 10 + q.quarter;
-        const label = `${yearObj.year} Q${q.quarter}`;
-        
-        if (!allDataPoints.has(dateKey)) {
-          allDataPoints.set(dateKey, {
-            label: label,
-            companies: new Map()
-          });
-        }
-        
-        allDataPoints.get(dateKey).companies.set(company, q.subCountMillion);
-      });
-    });
+    series.labels.forEach(label => allLabelsSet.add(label));
   });
 
-  const sortedDateKeys = Array.from(allDataPoints.keys()).sort((a, b) => a - b);
-  const sortedLabels = sortedDateKeys.map(key => allDataPoints.get(key).label);
+  // Sort labels chronologically (same as line chart)
+  const sortedLabels = Array.from(allLabelsSet).sort((a, b) => {
+    const [yearA, quarterA] = a.split(' Q');
+    const [yearB, quarterB] = b.split(' Q');
+    const dateA = parseInt(yearA) * 10 + parseInt(quarterA);
+    const dateB = parseInt(yearB) * 10 + parseInt(quarterB);
+    return dateA - dateB;
+  });
 
   const datasets = [];
-  const companyLastValues = new Map();
 
   selectedStreams.forEach(stream => {
     const company = window.mediaUtils.streamToCompany(stream);
     if (!company) return;
     
-    companyLastValues.set(company, 0);
+    const series = companyDataMap.get(company);
     
-    const mappedData = sortedDateKeys.map(dateKey => {
-      const point = allDataPoints.get(dateKey);
-      
-      if (point.companies.has(company)) {
-        const value = point.companies.get(company);
-        companyLastValues.set(company, value);
-        return value;
-      } else {
-        return companyLastValues.get(company);
-      }
+    // Create a map of label -> value for quick lookup
+    const dataMap = new Map();
+    series.labels.forEach((label, i) => {
+      dataMap.set(label, series.values[i]);
+    });
+
+    // Map data to the sorted timeline, using null for missing points (same as line chart)
+    const mappedData = sortedLabels.map(label => {
+      return dataMap.has(label) ? dataMap.get(label) : null;
     });
 
     datasets.push({
       label: company,
       data: mappedData,
-      fill: 'origin',
-      backgroundColor: window.mediaUtils.companyColors[company] + '80',
-      borderColor: window.mediaUtils.companyColors[company],
-      borderWidth: 3,
       tension: 0.4,
-      pointRadius: 0,
-      pointHoverRadius: 6,
-      pointHoverBackgroundColor: window.mediaUtils.companyColors[company],
+      borderWidth: 3,
+      borderColor: window.mediaUtils.companyColors[company] || '#000000',
+      backgroundColor: (window.mediaUtils.companyColors[company] || '#000000') + '80', // Add transparency (80 = ~50% opacity)
+      fill: true, // THIS IS THE ONLY DIFFERENCE - filled instead of false
+      spanGaps: true,
+      pointRadius: 4,
+      pointHoverRadius: 7,
+      pointBackgroundColor: window.mediaUtils.companyColors[company] || '#000000',
+      pointBorderColor: '#1a1a1a',
+      pointBorderWidth: 2,
       pointHoverBorderColor: '#ffffff',
-      pointHoverBorderWidth: 2
+      pointHoverBorderWidth: 3
     });
   });
 
   // Store full data
   fullAreaLabels = sortedLabels;
   fullAreaDatasets = datasets;
+  
+  // Initialize range to show all data
   currentAreaRange = { start: 0, end: sortedLabels.length - 1 };
-
+  
   areaChart.data.labels = sortedLabels;
   areaChart.data.datasets = datasets;
   areaChart.update();
   
+  // Update range selector
   updateAreaRangeSelector();
 }
 
@@ -246,6 +215,7 @@ function updateAreaRangeSelector() {
   let rangeContainer = document.getElementById('areaRangeSelector');
   
   if (!rangeContainer) {
+    // Create range selector container if it doesn't exist
     const chartContainer = document.getElementById('areaChart').parentElement;
     rangeContainer = document.createElement('div');
     rangeContainer.id = 'areaRangeSelector';
@@ -267,6 +237,7 @@ function updateAreaRangeSelector() {
     return;
   }
   
+  // Create mini chart canvas
   rangeContainer.innerHTML = `
     <canvas id="miniAreaChart" style="width: 100%; height: 100%;"></canvas>
     <div id="areaRangeOverlay" style="
@@ -331,10 +302,12 @@ function updateAreaRangeSelector() {
     </div>
   `;
   
+  // Destroy previous mini chart if exists
   if (miniAreaChart) {
     miniAreaChart.destroy();
   }
   
+  // Create mini chart with dark theme (same as line chart)
   const miniCtx = document.getElementById('miniAreaChart').getContext('2d');
   miniAreaChart = new Chart(miniCtx, {
     type: 'line',
@@ -356,12 +329,10 @@ function updateAreaRangeSelector() {
       },
       scales: {
         y: {
-          stacked: true,
           display: false,
           beginAtZero: true
         },
         x: {
-          stacked: true,
           display: false
         }
       },
@@ -369,6 +340,7 @@ function updateAreaRangeSelector() {
     }
   });
   
+  // Initialize range window
   const rangeWindow = document.getElementById('areaRangeWindow');
   const leftMask = document.getElementById('areaLeftMask');
   const rightMask = document.getElementById('areaRightMask');
@@ -380,6 +352,7 @@ function updateAreaRangeSelector() {
   leftMask.style.width = '0%';
   rightMask.style.width = '0%';
   
+  // Dragging logic (same as line chart)
   let isDragging = false;
   let dragMode = null;
   let startX = 0;
@@ -395,6 +368,7 @@ function updateAreaRangeSelector() {
     leftMask.style.width = leftPercent + '%';
     rightMask.style.width = rightPercent + '%';
     
+    // Update main chart
     const totalPoints = fullAreaLabels.length;
     const startIdx = Math.floor((leftPercent / 100) * totalPoints);
     const endIdx = Math.ceil(((100 - rightPercent) / 100) * totalPoints) - 1;
