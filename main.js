@@ -624,8 +624,27 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.classList.toggle("active", window.mediaData.selectedStreams.has(btn.dataset.stream));
     });
     
+    // Update empty state visibility
+    updateEmptyStateVisibility();
+    
     // Update the active chart
     updateActiveChart();
+  }
+
+  // Function to show/hide empty state based on active buttons
+  function updateEmptyStateVisibility() {
+    const emptyState = document.getElementById('emptyState');
+    const comparisonArea = document.getElementById('dropZone');
+    
+    if (window.mediaData.selectedStreams.size > 0) {
+      // Hide empty state when at least one button is active
+      emptyState.style.display = 'none';
+      comparisonArea.classList.add('has-data');
+    } else {
+      // Show empty state when no buttons are active
+      emptyState.style.display = 'flex';
+      comparisonArea.classList.remove('has-data');
+    }
   }
 
   function streamToInt(stream) {
@@ -737,4 +756,7 @@ case 'heatmap':
 
   // Initial chart render
   updateActiveChart();
+  
+  // Initial empty state check
+  updateEmptyStateVisibility();
 });

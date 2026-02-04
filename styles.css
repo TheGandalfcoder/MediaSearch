@@ -9,8 +9,8 @@
     --primary-color: #1a2332;
     --secondary-color: #2c3e50;
     --accent-color: #3498db;
-    --text-primary: #2c3e50;
-    --text-secondary: #7f8c8d;
+    --text-primary: #ffffff;
+    --text-secondary: #ffffff;
 
     --background-color: #202020;
     --hover-color: #ecf0f1;
@@ -26,6 +26,7 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    overflow-x: hidden;
 }
 
 /* Navigation Bar */
@@ -37,7 +38,7 @@ body {
     top: 0;
     z-index: 1000;
     box-shadow: var(--shadow);
-    width:100%
+    width: 100%;
 }
 
 .nav-container {
@@ -65,6 +66,7 @@ body {
 .main-content {
     flex: 1;
     padding: 1.5rem 0 2.5rem;
+    width: 100%;
 }
 
 .content-wrapper {
@@ -74,6 +76,7 @@ body {
     margin: 0 auto;
     padding: 0 1.5rem;
     align-items: flex-start;
+    width: 100%;
 }
 
 /* Sidebar */
@@ -142,6 +145,7 @@ body {
 .container {
     flex: 1;
     min-width: 0;
+    width: 100%;
 }
 
 /* Page Header */
@@ -183,6 +187,7 @@ body {
     gap: 0.75rem;
     flex-wrap: wrap;
     flex: 1;
+    width: 100%;
 }
 
 /* Search Bar */
@@ -192,32 +197,33 @@ body {
     align-items: center;
     flex: 1;
     min-width: 100%;
+    width: 100%;
 }
-.search-results-container{
-  position: relative;
-  width: 100%;
-  
+
+.search-results-container {
+    position: relative;
+    width: 100%;
 }
 
 /* Visible box under search */
-.search-results{
-  margin-top: 8px;
-  width: 100%;
-  min-height: 80px;
-  border-radius: 10px;
-  background: none;
-  padding: 10px;
-  font-size: 0.9rem;
-  color: #333;
+.search-results {
+    margin-top: 8px;
+    width: 100%;
+    min-height: 80px;
+    border-radius: 10px;
+    background: none;
+    padding: 10px;
+    font-size: 0.9rem;
+    color: #333;
 }
 
-.search-result-item{
-    width:100px;
+.search-result-item {
+    width: 100px;
 }
 
 /* Placeholder styling */
-.search-placeholder{
-  color: #999;
+.search-placeholder {
+    color: #999;
 }
 
 .search-icon {
@@ -311,6 +317,8 @@ body {
     padding: 3rem 1.5rem;
     min-height: 350px;
     margin-bottom: 2rem;
+    width: 100%;
+    overflow-x: auto;
 }
 
 .empty-state {
@@ -499,6 +507,7 @@ body {
     border-top: 1px solid var(--border-color);
     margin-top: auto;
     padding: 2rem 0 1rem;
+    width: 100%;
 }
 
 .footer-container {
@@ -551,6 +560,96 @@ body {
     font-size: 0.9rem;
 }
 
+/* Chart Container Styles - MOBILE RESPONSIVE */
+.chart-container {
+    width: 100%;
+    min-height: 400px;
+    position: relative;
+    overflow-x: auto;
+}
+
+.chart-container canvas {
+    max-width: 100%;
+    max-height: 500px;
+    height: auto !important;
+    width: 100% !important;
+}
+
+/* Hide empty state when charts are active */
+.comparison-area.has-data .empty-state {
+    display: none;
+}
+
+.comparison-area:not(.has-data) .empty-state {
+    display: block;
+}
+
+/* Visualization option active state */
+.viz-option {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.viz-option.active {
+    background-color: #3B82F6;
+    color: white;
+    font-weight: 600;
+}
+
+.viz-option:hover {
+    background-color: #f0f0f0;
+}
+
+.viz-option.active:hover {
+    background-color: #2563EB;
+}
+
+/* Bubble Chart Styles */
+#bubbleChart {
+    width: 100%;
+    height: 600px;
+    border-radius: 8px;
+    background: #1a1a1a;
+}
+
+.chart-container[data-chart-container="bubble"] {
+    background: #1a1a1a;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.chart-container[data-chart-container="heatmap"] {
+    background: #1a1a1a;
+    border-radius: 8px;
+    padding: 0px;
+}
+
+/* Dark theme for line chart container */
+.chart-container[data-chart-container="line"] {
+    background: #1a1a1a;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+#comparisonChart {
+    background: #1a1a1a;
+    border-radius: 8px;
+}
+
+/* Dark theme for area chart */
+.chart-container[data-chart-container="area"] {
+    background: #1a1a1a;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+#areaChart {
+    width: 100%;
+    height: 600px;
+    background: #1a1a1a;
+    border-radius: 8px;
+}
+
 /* Responsive Design */
 @media (max-width: 968px) {
     .content-wrapper {
@@ -562,6 +661,14 @@ body {
         width: 100%;
         position: relative;
         top: 0;
+    }
+
+    .chart-container {
+        min-height: 300px;
+    }
+
+    .chart-container canvas {
+        max-height: 400px !important;
     }
 }
 
@@ -579,7 +686,7 @@ body {
     }
 
     .page-header h1 {
-        font-size: 2rem;
+        font-size: 1.5rem;
     }
 
     .options-bar {
@@ -600,7 +707,7 @@ body {
     }
 
     .comparison-area {
-        padding: 2rem 1rem;
+        padding: 1.5rem 1rem;
         min-height: 280px;
     }
 
@@ -638,106 +745,59 @@ body {
     .footer-bottom {
         padding: 0 1rem;
     }
+
+    .chart-container {
+        min-height: 250px;
+        padding: 10px;
+    }
+
+    .chart-container canvas {
+        max-height: 350px !important;
+    }
+
+    #bubbleChart,
+    #areaChart {
+        height: 400px;
+    }
 }
 
 @media (max-width: 480px) {
     .page-header h1 {
-        font-size: 1.75rem;
+        font-size: 1.35rem;
     }
 
     .empty-state-icon {
-        font-size: 2.5rem;
+        font-size: 2rem;
     }
 
     .empty-state h2 {
-        font-size: 1.1rem;
+        font-size: 1rem;
     }
 
     .empty-state p {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
     }
-}
 
-/* Chart Container Styles */
-.chart-container {
-  width: 100%;
-  min-height: 400px;
-  position: relative;
-}
+    .comparison-area {
+        padding: 1rem 0.75rem;
+    }
 
-.chart-container canvas {
-  max-height: 500px;
-}
+    .chart-container {
+        min-height: 200px;
+        padding: 5px;
+    }
 
-/* Hide empty state when charts are active */
-.comparison-area.has-data .empty-state {
-  display: none;
-}
+    .chart-container canvas {
+        max-height: 300px !important;
+    }
 
-.comparison-area:not(.has-data) .empty-state {
-  display: block;
-}
+    #bubbleChart,
+    #areaChart {
+        height: 350px;
+    }
 
-/* Visualization option active state */
-.viz-option {
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.viz-option.active {
-  background-color: #3B82F6;
-  color: white;
-  font-weight: 600;
-}
-
-.viz-option:hover {
-  background-color: #f0f0f0;
-}
-
-.viz-option.active:hover {
-  background-color: #2563EB;
-}
-
-/* Bubble Chart Styles */
-#bubbleChart {
-  width: 100%;
-  height: 600px;
-  border-radius: 8px;
-  background: #1a1a1a;
-}
-
-.chart-container[data-chart-container="bubble"] {
-  background: #1a1a1a;
-  border-radius: 8px;
-  padding: 20px;
-}
-
-.chart-container[data-chart-container="heatmap"] {
-  background: #1a1a1a;
-  border-radius: 8px;
-  padding: 0px;
-}
-
-/* Dark theme for line chart container */
-.chart-container[data-chart-container="line"] {
-  background: #1a1a1a;
-  border-radius: 8px;
-  padding: 20px;
-}
-
-#comparisonChart {
-  background: #1a1a1a;
-  border-radius: 8px;
-}
-
-/* Dark theme for area chart */
-.chart-container[data-chart-container="area"] {
-  background: #1a1a1a;
-  border-radius: 8px;
-  padding: 20px;
-}
-
-#areaChart {
-  background: #1a1a1a;
-  border-radius: 8px;
+    .comparison-logo {
+        height: 45px;
+        width: 45px;
+    }
 }
