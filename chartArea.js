@@ -295,27 +295,36 @@ function renderAreaChart() {
     }
 
     // Draw line on top
-    areaCtx.strokeStyle = ds.color;
-    areaCtx.lineWidth = 3;
-    areaCtx.beginPath();
-    started = false;
-    
-    for (let i = 0; i < n; i++) {
-      const v = ds.data[i];
-      if (v == null) {
-        started = false;
+areaCtx.strokeStyle = ds.color;
+areaCtx.lineWidth = 3;
+areaCtx.beginPath();
+
+let prevX = null;
+let prevY = null;
+
+for (let i = 0; i < n; i++) {
+    let v = ds.data[i];
+
+    // If the point is null, skip it (or optionally keep prevY to hold the last value)
+    if (v == null) {
         continue;
-      }
-      const x = left + i * stepX;
-      const y = yToPixel(v);
-      if (!started) {
-        areaCtx.moveTo(x, y);
-        started = true;
-      } else {
-        areaCtx.lineTo(x, y);
-      }
     }
-    areaCtx.stroke();
+
+    const x = left + i * stepX;
+    const y = yToPixel(v);
+
+    if (prevX == null) {
+        areaCtx.moveTo(x, y);
+    } else {
+        areaCtx.lineTo(x, y);
+    }
+
+    prevX = x;
+    prevY = y;
+}
+
+areaCtx.stroke();
+
 
     // Draw points
     areaCtx.fillStyle = ds.color;
@@ -602,7 +611,32 @@ function updateAreaRangeSelector() {
     }
   });
 
-  document.addEventListener("mousemove", onMouseMove);
+document.addEventListener("mousemove", (e) => {
+    if (!isDragging) return;
+
+    const containerWidth = rangeContainer.offsetWidth;
+    const deltaPercent = ((e.clientX - startX) / containerWidth) * 100;
+
+    if (dragMode === "left") {
+        const newLeft = startLeft + deltaPercent;
+        applyRange(newLeft, parseFloat(rangeWindow.style.right));
+    } else if (dragMode === "right") {
+        const newRight = startRight - deltaPercent;
+        applyRange(parseFloat(rangeWindow.style.left), newRight);
+    } else if (dragMode === "window") {
+        const windowWidth = 100 - startLeft - startRight;
+        let newLeft = startLeft + deltaPercent;
+        if (newLeft < 0) newLeft = 0;
+        if (newLeft + windowWidth > 100) newLeft = 100 - windowWidth;
+        applyRange(newLeft, 100 - newLeft - windowWidth);
+    }
+});
+
+document.addEventListener("mouseup", () => {
+    isDragging = false;
+    dragMode = null;
+});
+
   document.addEventListener("mouseup", onMouseUp);
 
   function onMouseMove(e) {
